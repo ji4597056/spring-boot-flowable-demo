@@ -1,0 +1,67 @@
+group 'com.github.ji4597056'
+version '1.0'
+
+buildscript {
+    ext {
+        springBootVersion = "1.5.7.RELEASE"
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    mavenCentral()
+}
+
+jar {
+    baseName = 'flowable-demo'
+    version = '1.0'
+}
+
+ext {
+    flowableVersion = "6.2.1"
+    swaggerVersion = "2.7.0"
+    druidVersion = "1.0.28"
+    lombokVersion = "1.16.18"
+}
+
+dependencies {
+    //spring boot
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.boot:spring-boot-actuator"
+    compile "org.springframework.boot:spring-boot-devtools"
+    compile "org.springframework.boot:spring-boot-starter-security"
+    compile "org.springframework.boot:spring-boot-starter-jdbc"
+    compile "org.springframework.boot:spring-boot-starter-aop"
+    compile "org.springframework.boot:spring-boot-starter-data-jpa"
+
+    //support
+    compile "org.flowable:flowable-spring-boot-starter-actuator:${flowableVersion}"
+    compile "io.springfox:springfox-swagger2:${swaggerVersion}"
+    compile "io.springfox:springfox-swagger-ui:${swaggerVersion}"
+    compile "mysql:mysql-connector-java"
+    compile "com.alibaba:druid:${druidVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+
+    //test
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+}
+

@@ -1,0 +1,16 @@
+server:
+  port: ${SERVER_PORT:4040}
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:flowable}
+  http:
+    encoding:
+      force: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+management:
+  security:
+    enabled: false

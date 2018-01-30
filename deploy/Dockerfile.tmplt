@@ -1,0 +1,12 @@
+FROM tomcat:TOMCAT_IMAGE_VERSION
+MAINTAINER Jeffrey <ji459705636@163.com>
+
+# install core build tools
+RUN apk add --update nodejs git wget bash python make g++ java-cacerts ttf-dejavu fontconfig && \
+     ln -sf "${JAVA_HOME}/bin/"* "/usr/bin/"
+
+# add flowable wars and dependence libs
+COPY wars/* /usr/local/tomcat/webapps/
+COPY libs/* /usr/local/tomcat/lib/
+COPY tomcat/server.xml /usr/local/tomcat/conf/server.xml
+COPY tomcat/catalina.sh /usr/local/tomcat/bin/catalina.sh      

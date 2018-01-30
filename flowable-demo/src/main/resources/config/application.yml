@@ -1,0 +1,25 @@
+server:
+  port: ${SERVER_PORT:4040}
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:flowable-demo}
+  http:
+    encoding:
+      force: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  datasource:
+    ip: ${SPRING_DATASOURCE_IP:172.24.4.99}
+    port: ${SPRING_DATASOURCE_PORT:3306}
+    database: ${SPRING_DATASOURCE_DATABASE:flowable}
+    url: jdbc:mysql://${spring.datasource.ip}:${spring.datasource.port}/${spring.datasource.database}?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&allowMultiQueries=true&useSSL=false&tinyInt1isBit=false
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    driver-class-name: com.mysql.jdbc.Driver
+
+management:
+  security:
+    enabled: false
+
