@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:flowable="http://flowable.org/bpmn"
+  typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath"
+  targetNamespace="http://www.flowable.org/processdef">
+  <process id="applyPermission" name="Apply permission" isExecutable="true">
+    <!-- start -->
+    <startEvent id="start" name="start"/>
+
+    <sequenceFlow id="start_to_updatePermission" sourceRef="start" targetRef="updatePermission"/>
+
+    <!-- 申请人修改权限 -->
+    <userTask id="updatePermission" name="申请人修改权限" flowable:assignee="${proposer_id}"/>
+
+    <sequenceFlow id="updatePermission_to_toApproval" sourceRef="updatePermission"
+      targetRef="toApproval"/>
+
+    <!-- 申请人选择 1.结束 2.继续修改权限 3.提交审批 -->
+    <exclusiveGateway id="toApproval"/>
+    <sequenceFlow id="toApproval_to_approvalA" sourceRef="toApproval"
+      targetRef="approvalA">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "submit"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="toApproval_to_updatePermission" sourceRef="toApproval"
+      targetRef="updatePermission">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "update"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="toApproval_to_end" sourceRef="toApproval" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "finish"}]]></conditionExpression>
+    </sequenceFlow>
+
+    <!-- 审批组A进行审批 -->
+    <userTask id="approvalA" name="审批组A进行审批" flowable:candidateGroups="groupA"/>
+
+    <sequenceFlow id="approvalA_to_approvalGatewayA" sourceRef="approvalA"
+      targetRef="approvalGatewayA"/>
+
+    <!-- 审批组A选择 1.通过则提交审批组B 2.不通过回退申请人修改 -->
+    <exclusiveGateway id="approvalGatewayA"/>
+    <sequenceFlow id="approvalGatewayA_to_approvalB" sourceRef="approvalGatewayA"
+      targetRef="approvalB">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "approval_success"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="approvalGatewayA_to_updatePermission" sourceRef="approvalGatewayA"
+      targetRef="updatePermission">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "approval_failure"}]]></conditionExpression>
+    </sequenceFlow>
+
+    <!-- 审批组B进行审批 -->
+    <userTask id="approvalB" name="审批组B进行审批" flowable:candidateGroups="groupB"/>
+
+    <sequenceFlow id="approvalB_to_approvalGatewayB" sourceRef="approvalB"
+      targetRef="approvalGatewayB"/>
+
+    <!-- 审批组B进行选择 1.通过则提交系统任务执行权限设置 2.不通过回退申请人修改 -->
+    <exclusiveGateway id="approvalGatewayB"/>
+    <sequenceFlow id="approvalGatewayB_to_applyPermissionTask" sourceRef="approvalGatewayB"
+      targetRef="applyPermissionTask">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "approval_success"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="approvalGatewayB_to_updatePermission" sourceRef="approvalGatewayB"
+      targetRef="updatePermission">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${operation == "approval_failure"}]]></conditionExpression>
+    </sequenceFlow>
+
+    <!-- 系统任务执行给申请人赋权限操作(可能会出现异常情况 1.申请人未填写申请权限 2.申请权限非法) -->
+    <serviceTask id="applyPermissionTask" name="权限设置任务"
+      flowable:class="com.github.ji4597056.task.permission.ApplyPermissionDelegate"/>
+
+    <sequenceFlow id="applyPermissionTask_to_end" sourceRef="applyPermissionTask"
+      targetRef="end"/>
+
+    <!-- 捕获异常转给记录异常日志系统任务 -->
+    <boundaryEvent id="applyPermissionErrorEvent" name="apply permission error event"
+      attachedToRef="applyPermissionTask">
+      <errorEventDefinition/>
+    </boundaryEvent>
+
+    <sequenceFlow id="applyPermissionErrorEvent_to_logTaskErrorTask"
+      sourceRef="applyPermissionErrorEvent"
+      targetRef="logTaskErrorTask"/>
+
+    <!-- 系统任务执行记录异常日志 -->
+    <serviceTask id="logTaskErrorTask" name="记录任务错误日志"
+      flowable:class="com.github.ji4597056.task.permission.LogErrorDelegate"/>
+
+    <sequenceFlow id="logTaskErrorTask_to_end" sourceRef="logTaskErrorTask"
+      targetRef="end"/>
+
+    <!-- end -->
+    <endEvent id="end" name="end"/>
+
+  </process>
+
+</definitions>
