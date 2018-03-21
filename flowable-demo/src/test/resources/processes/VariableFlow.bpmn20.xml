@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:flowable="http://flowable.org/bpmn"
+  typeLanguage="http://www.w3.org/2001/XMLSchema"
+  expressionLanguage="http://www.w3.org/1999/XPath"
+  targetNamespace="http://www.flowable.org/processdef">
+
+  <process id="variableFlow" name="variable flow" isExecutable="true">
+
+    <startEvent id="startEvent"/>
+    <sequenceFlow sourceRef="startEvent" targetRef="setNextGroup"/>
+
+    <userTask id="setNextGroup" name="set next group"
+      flowable:candidateGroups="${group}"/>
+    <sequenceFlow sourceRef="setNextGroup" targetRef="judge"/>
+
+    <exclusiveGateway id="judge"/>
+    <sequenceFlow sourceRef="judge" targetRef="setNextGroup">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${group != null}]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow sourceRef="judge" targetRef="endEvent">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${group == null}]]>
+      </conditionExpression>
+    </sequenceFlow>
+
+    <endEvent id="endEvent"/>
+
+  </process>
+
+</definitions>
