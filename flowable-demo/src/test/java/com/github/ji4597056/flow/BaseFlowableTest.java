@@ -8,7 +8,12 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.impl.cfg.StandaloneProcessEngineConfiguration;
+import org.flowable.engine.impl.persistence.entity.CommentEntityManager;
+import org.flowable.engine.impl.persistence.entity.data.CommentDataManager;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.junit.Assert;
 
 /**
  * @author Jeffrey
@@ -42,6 +47,10 @@ public class BaseFlowableTest {
 
     protected static ManagementService managementService;
 
+    protected static ProcessEngineConfigurationImpl processEngineConfiguration;
+
+    protected static CommentEntityManager commentEntityManager;
+
     static {
         // config
         ProcessEngineConfiguration cfg = new StandaloneProcessEngineConfiguration()
@@ -59,5 +68,27 @@ public class BaseFlowableTest {
         historyService = processEngine.getHistoryService();
         identityService = processEngine.getIdentityService();
         managementService = processEngine.getManagementService();
+        processEngineConfiguration = (ProcessEngineConfigurationImpl) processEngine
+            .getProcessEngineConfiguration();
+        commentEntityManager = processEngineConfiguration.getCommentEntityManager();
+    }
+
+    public void deploy(String resource, String processKey) {
+        repositoryService.createDeployment().addClasspathResource(resource).deploy();
+        Assert.assertTrue(
+            repositoryService.createProcessDefinitionQuery().processDefinitionKey(processKey)
+                .list().size() > 0);
+    }
+
+    public void clean(String processKey) {
+        runtimeService.createProcessInstanceQuery().processDefinitionKey(processKey).list()
+            .forEach(processInstance -> runtimeService
+                .deleteProcessInstance(processInstance.getId(), null));
+    }
+
+    public void checkProcessInstanceEnd(ProcessInstance processInstance) {
+        Assert.assertNull(
+            runtimeService.createProcessInstanceQuery().processInstanceId(processInstance.getId())
+                .singleResult());
     }
 }
